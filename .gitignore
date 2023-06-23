@@ -1,2 +1,5 @@
 working
 dpd_datasets
+out
+*.pyc
+*.png

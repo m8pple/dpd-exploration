@@ -13,6 +13,7 @@ class DMPCIParameter:
     type : str
     minval : float
     maxval : float
+    index : int
 
     def generate(self, rng:random.Random) -> Union[float,int]:
         if self.type=="REAL":
@@ -41,7 +42,8 @@ class DMPCITemplate:
                     m.group(1),
                     m.group(2),
                     float(m.group(3)),
-                    float(m.group(4))
+                    float(m.group(4)),
+                    len(self.parameters) # index of the parameter
                 )
                 assert param.name not in self.parameters
                 self.parameters[param.name]=param

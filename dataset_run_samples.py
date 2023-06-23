@@ -74,7 +74,10 @@ def run_one(config:RunConfig):
             sys.stderr.write(f"Rendering {i}\n")
             with open( i.parent / (i.name+".povray.log"), "wt") as log_dst:
                 subprocess.run(
-                    ["povray", f"{str(i.name)}", "-W800", "-H600" ],
+                    ["povray", f"{str(i.name)}",
+                        "-W800", "-H600",
+                        "-D"  # Turn of display
+                    ],
                     cwd=str(private_working_dir),
                     stdout=log_dst,
                     stderr=subprocess.STDOUT
@@ -84,7 +87,8 @@ def run_one(config:RunConfig):
     db.save(private_working_dir / f"{id}.hdf5")
     
     with zipfile.ZipFile(config.working_dir / f"{id}.zip", "x", compression=zipfile.ZIP_DEFLATED) as zip:
-        zip.mkdir(id)
+        # mkdir only in python 3.11
+        #zip.mkdir(id)
         to_add=[f"{prefix}.{id}" for prefix in ["dmpci", "dmpcas", "dmpchs", "dmpcis", "dmpcls"]]
         for filename in to_add:
             zip.write(private_working_dir/filename, f"{id}/{filename}")
