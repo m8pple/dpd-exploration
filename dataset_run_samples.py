@@ -104,8 +104,18 @@ def run_one(config:RunConfig):
         if config.keep_rst:
             compress_and_add_matching_files(private_working_dir, "*.rst", id, zip)
 
-    # Copy it in in one go, so that it is either there or not
-    (config.working_dir / f"{id}.zip").rename( config.output_dir / f"{id}.zip" )
+    src_path=(config.working_dir / f"{id}.zip")
+    dst_path=config.output_dir / f"{id}.zip"
+    try:
+        # Copy it in in one go, so that it is either there or not
+        src_path.rename( dst_path )
+    except OSError as e:
+        if e.errno==18:  # OSError: [Errno 18] Invalid cross-device link
+            shutil.copyfile( src_path, dst_path )
+            src_path.unlink()
+        else:
+            raise
+
 
     if not config.preserve_working:
         shutil.rmtree(private_working_dir)

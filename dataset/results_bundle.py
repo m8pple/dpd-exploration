@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 from pathlib import Path
 from typing import *
@@ -6,6 +7,7 @@ import h5py
 import numpy as np
 import os
 import zipfile
+import shutil
 import io
 import sys
 import tempfile
@@ -176,7 +178,8 @@ class Dataset:
     def merge_run_bundles(self) -> int:
         added=0
         for p in self.dir.glob("sample_*.zip"):
-            v = p.name.removesuffix(".zip")
+            #v = p.name.removesuffix(".zip")
+            v = p.name[:-4]
             if self.matrix and v in self.matrix:
                 continue
 
@@ -194,7 +197,14 @@ class Dataset:
         if self.matrix_dirty_count>0:
             ww=tempfile.NamedTemporaryFile(delete=False)
             self.matrix.save(ww)
-            os.replace( ww.name,  self.dir / f"{self.id}.hdf5" )
+            try:
+                os.replace( ww.name,  self.dir / f"{self.id}.hdf5" )
+            except OSError as err:
+                if err.errno==18:
+                    shutil.copy(ww.name, self.dir / f"{self.id}.hdf5")
+                    Path(ww.name).unlink()
+                else:
+                    raise
             self.matrix_dirty_count=0
 
     @staticmethod
@@ -257,7 +267,7 @@ class Dataset:
         else:
             return self.get_parameter(self.parameter_names[name_or_index])
 
-    def export_pivot_csv(self, dst:IO):
+    def export_pivot_csv(self, dst):
         matrix=self.matrix
 
 

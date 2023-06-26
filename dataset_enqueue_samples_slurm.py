@@ -60,7 +60,7 @@ if __name__=="__main__":
     today=datetime.datetime.today()
     today_str=today.strftime("%Y-%m-%d--%H-%M-%S")
     if args.working_dir is None:
-        working_dir = Path(f"/scratch/{getpass.getuser()}/dpd_explore_temp/dataset.id/{today_str}")
+        working_dir = Path(f"/scratch/{getpass.getuser()}/dpd_explore_temp/{dataset.id}/{today_str}")
         working_dir.mkdir(exist_ok=False,parents=True)
     else:
         working_dir = Path(args.working_dir)
@@ -87,7 +87,7 @@ REPEATS=$(( SLURM_CPUS_ON_NODE * {args.repeats_per_cpu} ))
 >&2 echo "Requesting $REPEATS samples in total"
 
 cd {dpd_exploration_dir}
-python3 dataset_run_samples.py "{dataset_dir}" --dpd-path="{dpd_path}" --tags="{args.tags}" --repeats="$REPEATS" --working-dir="{working_dir}" \
+python3 dataset_run_samples.py "{dataset_dir}" --dpd-path="{dpd_path}" --tags="{args.tags}" --repeats="$REPEATS" --num-processes="$SLURM_CPUS_ON_NODE" --working-dir="{working_dir}" \
     {"--render-povray" if args.render_povray else "" } \
     {"--keep-pov" if args.keep_pov else "" } \
     {"--keep-rst" if args.keep_rst else "" } \
@@ -97,3 +97,5 @@ python3 dataset_run_samples.py "{dataset_dir}" --dpd-path="{dpd_path}" --tags="{
 '''
         )
 
+    for i in range(int(args.num_tasks)):
+        os.system(f"sbatch {jobfile}")
