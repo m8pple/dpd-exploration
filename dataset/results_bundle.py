@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 from pathlib import Path
 from typing import *
@@ -6,12 +7,13 @@ import h5py
 import numpy as np
 import os
 import zipfile
+import shutil
 import io
 import sys
 import tempfile
 import math
 
-from .dmpci_template import DMPCITemplate
+from .dmpci_template import DMPCITemplate, DMPCIParameter
 
 def _is_vector_of(x, dtype):
     return len(x.shape)==1 and x.dtype==dtype
@@ -44,15 +46,20 @@ class ResultsMatrix:
         self.nParameters=parameters.shape[0]
 
         self.parameters=parameters.copy()
+        self.parameters_to_index={ str(k):i[0] for (i,k) in np.ndenumerate(self.parameters)  }
+        
         self.observables=observables.copy()
+        self.observables_to_index={ str(k):i[0] for (i,k) in np.ndenumerate(self.observables)  }
+        
         self.times=times.copy()
-
+        self.times_to_index={ int(k):i[0] for (i,k) in np.ndenumerate(self.times)  }
+        
         self.experiment_capacity=reserve_exp
         self.nExperiments=0
         self.experiments=np.array( [""]*self.experiment_capacity, dtype=object )
-        self.experiments_index={  } # dtype: Dict[str,int]
+        self.experiments_index={  } # type: Dict[str,int]
         self.tags=np.array( [""]*self.experiment_capacity, dtype=object)
-        self.tags_to_indices={} # dtype: Dict[str,List[int]]
+        self.tags_to_indices={} # type: Dict[str,List[int]]
         
         self.configurations=np.zeros( shape=(self.experiment_capacity, self.nParameters), dtype=np.float64 )
         self.data=np.zeros( shape=(self.experiment_capacity, self.nTimes, self.nObservables), dtype=np.float64 )
@@ -106,7 +113,7 @@ class ResultsMatrix:
         self.configurations[dest_indices,:]=configurations[src_indices,:]
         self.data[dest_indices,:,:]=data[src_indices,:,:]
         
-        if tags:
+        if tags is not None:
             for dst in dest_indices:
                 src=src_indices[dst-self.nExperiments]
                 for tag in tags[src].split(";"):
@@ -171,7 +178,8 @@ class Dataset:
     def merge_run_bundles(self) -> int:
         added=0
         for p in self.dir.glob("sample_*.zip"):
-            v = p.name.removesuffix(".zip")
+            #v = p.name.removesuffix(".zip")
+            v = p.name[:-4]
             if self.matrix and v in self.matrix:
                 continue
 
@@ -189,7 +197,14 @@ class Dataset:
         if self.matrix_dirty_count>0:
             ww=tempfile.NamedTemporaryFile(delete=False)
             self.matrix.save(ww)
-            os.replace( ww.name,  self.dir / f"{self.id}.hdf5" )
+            try:
+                os.replace( ww.name,  self.dir / f"{self.id}.hdf5" )
+            except OSError as err:
+                if err.errno==18:
+                    shutil.copy(ww.name, self.dir / f"{self.id}.hdf5")
+                    Path(ww.name).unlink()
+                else:
+                    raise
             self.matrix_dirty_count=0
 
     @staticmethod
@@ -234,7 +249,9 @@ class Dataset:
         self.template = DMPCITemplate(template_file)
         assert self.template.run_id == self.id
 
-        self.matrix = None # dtype: Optional[ResultsMatrix]
+        self.parameter_names = [p.name for p in self.template.parameters.values()]
+
+        self.matrix = None # type: Optional[ResultsMatrix]
         self.matrix_dirty_count=0
         
         hdf5_path = self.dir / f"{self.id}.hdf5"
@@ -244,7 +261,13 @@ class Dataset:
         
         self.merge_run_bundles()
 
-    def export_pivot_csv(self, dst:IO):
+    def get_parameter(self, name_or_index:Union[str,int] ) -> DMPCIParameter:
+        if isinstance(name_or_index,str):
+            return self.template.parameters[name_or_index]
+        else:
+            return self.get_parameter(self.parameter_names[name_or_index])
+
+    def export_pivot_csv(self, dst):
         matrix=self.matrix
 
 
