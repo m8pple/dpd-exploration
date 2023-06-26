@@ -1,2 +1,8 @@
 working
 dpd_datasets
+dpd_explore
+examples/dpd_explore
+examples/dpd_exploration
+examples/dpd_explore_working
+
+__pycache__
