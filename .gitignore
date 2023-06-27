@@ -3,3 +3,9 @@ dpd_datasets
 out
 *.pyc
 *.png
+dpd_explore
+examples/dpd_explore
+examples/dpd_exploration
+examples/dpd_explore_working
+
+__pycache__
