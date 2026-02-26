@@ -1,17 +1,17 @@
 dpd
 
-Title	" Water and floppy oil phase separation "
+Title	" Polymers with end caps and mid-point binding site.  "
 Date    03/06/23    
-Comment	" Mixture of water and oil.
+Comment	" 
 
-        EXPLORE-PARAMETER  S_S_STRENGTH REAL 25 75
+        EXPLORE-PARAMETER  S_S_STRENGTH REAL 5 50
         
-        EXPLORE-PARAMETER  S_H_STRENGTH REAL 25 75
-        EXPLORE-PARAMETER  H_H_STRENGTH REAL 25 75
+        EXPLORE-PARAMETER  S_H_STRENGTH REAL 5 50
+        EXPLORE-PARAMETER  H_H_STRENGTH REAL 5 50
 
-        EXPLORE-PARAMETER  M_S_STRENGTH REAL 25 75
-        EXPLORE-PARAMETER  M_H_STRENGTH REAL 25 75
-        EXPLORE-PARAMETER  M_M_STRENGTH REAL 25 75
+        EXPLORE-PARAMETER  S_M_STRENGTH REAL 5 50
+        EXPLORE-PARAMETER  H_M_STRENGTH REAL 5 50
+        EXPLORE-PARAMETER  M_M_STRENGTH REAL 5 50
 
         EXPLORE-PARAMETER  Oil_BP_STRENGTH REAL 0 50
         EXPLORE-PARAMETER  Oil_BP_ANGLE REAL 0 90
@@ -40,7 +40,7 @@ Bead  H
 Bead  M
       0.5
       50  ${S_M_STRENGTH} ${H_M_STRENGTH} ${M_M_STRENGTH}
-      4.5   4.5   4.5
+      4.5   4.5   4.5 4.5
       
 Bond  H H  100  0.5
 Bond  H S  100  0.5
@@ -52,7 +52,7 @@ BondPair H H S ${Oil_BP_STRENGTH} ${Oil_BP_ANGLE}
 BondPair H S S ${Oil_BP_STRENGTH} ${Oil_BP_ANGLE}
 BondPair S S S ${Oil_BP_STRENGTH} ${Oil_BP_ANGLE}
 BondPair S S M ${Oil_BP_STRENGTH} ${Oil_BP_ANGLE}
-BondPair S S M ${Oil_BP_STRENGTH} ${Oil_BP_ANGLE}
+BondPair S M M ${Oil_BP_STRENGTH} ${Oil_BP_ANGLE}
 
 Polymer	Water    0.95   " (W) "
 Polymer Oil      0.05   " (H H ( 8 S ) M M ( 8 S )  H H) "
@@ -67,7 +67,7 @@ Time		10000
 SamplePeriod     100
 AnalysisPeriod	 100
 DensityPeriod    100
-DisplayPeriod    500
+DisplayPeriod    1000
 RestartPeriod    10000
 Grid		1  1  1
 

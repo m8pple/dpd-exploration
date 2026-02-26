@@ -10,7 +10,10 @@ from dataclasses import dataclass
 import multiprocessing
 import os
 import bz2
+import datetime
 import io
+import random
+import math
 import zipfile
 import tempfile
 from typing import *
@@ -21,9 +24,17 @@ from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from dataset import command_line_dataset_open_helper, DMPCIParameter
+from dataset import command_line_dataset_open_helper, DMPCIParameter, Dataset
 
+@dataclass
+class ImagePoint:
+    eid_current : str # The experiment currently being displayed
+    pt_current : np.ndarray # Location of the point being displayed
 
+    time_set : datetime.datetime # When the target was last changed
+
+    image : ImageTk  # Image being shown in the label. Used to ensure it is not garbage collected 
+    widget : ttk.Label
 
 
 if __name__=="__main__":

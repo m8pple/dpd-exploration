@@ -187,14 +187,18 @@ if __name__=="__main__":
         else:
             processes=int(args.num_processes)
         processes=max(1, processes)
+        sys.stderr.write(f"Num processes = {processes}\n")
 
         if processes > 1:
+            sys.stderr.write("Multicore\n")
             with multiprocessing.Pool(processes=processes) as pool:
                 done=0
                 for _ in pool.imap_unordered(run_one,  [config for i in range(0,args.repeats)]):
+                    sys.stderr.write(f"b\n")
                     done+=1
                     if (done%10)==0:
                         sys.stderr.write(f"Done {done} of {args.repeats}\n")
         else:
+            sys.stderr.write("Single core\n")
             for i in range(args.repeats):
                 run_one(config)
